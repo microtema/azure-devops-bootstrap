@@ -1,0 +1,231 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - feature/*
+  - develop
+  - release/*
+  - master
+variables:
+  systemName: Doc-Gen
+  version: 1.0.0-SNAPSHOT
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  isRelease: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+  isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+stages:
+  - stage: initialize
+    displayName: Initialize
+    jobs:
+      - job: initialize
+        displayName: Initialize
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: dotnet --version
+            displayName: 'Run a one-line script'
+  - stage: versioning
+    displayName: Versioning
+    dependsOn: [ initialize ]
+    condition: succeeded('initialize')
+    jobs:
+      - job: versioning
+        displayName: Versioning
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo $(version)
+            displayName: 'Run a one-line script'
+  - stage: compile
+    displayName: Compile
+    dependsOn: [ versioning ]
+    condition: succeeded('versioning')
+    jobs:
+      - job: versioning
+        displayName: versioning
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo versioning
+            displayName: 'Run a one-line script'
+  - stage: security_check
+    displayName: Security Check
+    dependsOn: [ compile ]
+    condition: succeeded('compile')
+    jobs:
+      - job: security_check
+        displayName: Security Check
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo security_check
+            displayName: 'Run a one-line script'
+  - stage: unit_test
+    displayName: Unit Test
+    dependsOn: [ security_check ]
+    condition: succeeded('security_check')
+    jobs:
+      - job: unit_test
+        displayName: unit test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo unit_test
+            displayName: 'Run a one-line script'
+  - stage: it_test
+    displayName: Integration Test
+    dependsOn: [ security_check ]
+    condition: succeeded('security_check')
+    jobs:
+      - job: it_test
+        displayName: unit test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo it_test
+            displayName: 'Run a one-line script'
+  - stage: quality_gate
+    displayName: Quality Gate
+    dependsOn: [ unit_test, it_test ]
+    condition: and(succeeded('unit_test'), succeeded('it_test'))
+    jobs:
+      - job: quality_gate
+        displayName: quality gate
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo quality_gate
+            displayName: 'Run a one-line script'
+  - stage: build
+    displayName: Build
+    dependsOn: [ quality_gate ]
+    condition: succeeded('quality_gate')
+    jobs:
+      - job: build
+        displayName: Build
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo build
+            displayName: 'Run a one-line script'
+  - stage: package
+    displayName: Package
+    dependsOn: [ build ]
+    condition: and(succeeded('build'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true), eq(variables.isMaster, true)))
+    jobs:
+      - job: package
+        displayName: package
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo package
+            displayName: 'Run a one-line script'
+  - stage: tag
+    displayName: Tag Release
+    dependsOn: [ package ]
+    condition: and(succeeded('build'), eq(variables.isMaster, true))
+    jobs:
+      - job: tag
+        displayName: package
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo tag release
+            displayName: 'Run a one-line script'
+  - stage: db_migration
+    displayName: DB Migration
+    dependsOn: [ tag ]
+    condition: and(succeeded('package'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true), eq(variables.isMaster, true)))
+    jobs:
+      - job: db_migration
+        displayName: DB Migration
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo db_migration
+            displayName: 'Run a one-line script'
+  - stage: deployment
+    displayName: Deployment
+    dependsOn: [ db_migration ]
+    condition: and(succeeded('db_migration'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true), eq(variables.isMaster, true)))
+    jobs:
+      - job: deployment
+        displayName: Deployment
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo deployment
+            displayName: 'Run a one-line script'
+  - stage: readiness
+    displayName: Readiness
+    dependsOn: [ deployment ]
+    condition: and(succeeded('deployment'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true), eq(variables.isMaster, true)))
+    jobs:
+      - job: Readiness
+        displayName: Readiness
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo Readiness
+            displayName: 'Run a one-line script'
+  - stage: system_test
+    displayName: System Test
+    dependsOn: [ readiness ]
+    condition: and(succeeded('readiness'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true)))
+    jobs:
+      - job: system_test
+        displayName: System Test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo system_test
+            displayName: 'Run a one-line script'
+  - stage: performance_test
+    displayName: Performance Test
+    dependsOn: [ system_test ]
+    condition: and(succeeded('system_test'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true)))
+    jobs:
+      - job: performance_test
+        displayName: Performance Test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo performance_test
+            displayName: 'Run a one-line script'
+  - stage: e2e_test
+    displayName: E2E Test
+    dependsOn: [ performance_test ]
+    condition: and(succeeded('performance_test'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true)))
+    jobs:
+      - job: e2e_test
+        displayName: E2E Test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo e2e_test
+            displayName: 'Run a one-line script'
+  - stage: doc_as_code
+    displayName: Documentation
+    dependsOn: [ e2e_test ]
+    condition: and(succeeded('readiness'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true), eq(variables.isMaster, true)))
+    jobs:
+      - job: e2e_test
+        displayName: E2E Test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo e2e_test
+            displayName: 'Run a one-line script'
+  - stage: notification
+    displayName: Notification
+    dependsOn: [ doc_as_code ]
+    condition: and(succeeded('readiness'), or(eq(variables.isDevelop, true), eq(variables.isRelease, true), eq(variables.isMaster, true)))
+    jobs:
+      - job: doc_as_code
+        displayName: Notification
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo Notification
+            displayName: 'Run a one-line script'
