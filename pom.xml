@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.microtema</groupId>
+    <groupId>com.munichre</groupId>
     <artifactId>azure-devops-bootstrap</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <name>DCS Bootstrap</name>
     <packaging>pom</packaging>
@@ -56,15 +56,21 @@
                         <version>2.0.0</version>
                         <configuration>
                             <variables>
-                                <REPO_TOKEN>njycuzzu57ymocylv7fmaiohyw4vpjapxxjxy3mxutw67at6kgua</REPO_TOKEN>
-                                <REPO_ORGANISATION>mariotema</REPO_ORGANISATION>
-                                <REPO_PROJECT>microtema</REPO_PROJECT>
+                                <PROJECT_NAME>DCS</PROJECT_NAME>
+                                <AZURE_LOCATION>westeurope</AZURE_LOCATION>
+                                <AZURE_LOCATION_SHORT>euw</AZURE_LOCATION_SHORT>
+                                <STAGE_COUNT>01</STAGE_COUNT>
+                                <REPO_TOKEN>wbu2w6x55tln3makzlddg5mdcfw4n5lvpipr4adbs5k7h4x4a4cq</REPO_TOKEN>
+                                <REPO_HOST>mrprojects-emea.visualstudio.com</REPO_HOST>
+                                <REPO_ORGANISATION>Digital%20Communication%20Services</REPO_ORGANISATION>
+                                <NODEJS_VERSION>16.x</NODEJS_VERSION>
+                                <STAGE_NAME>dev</STAGE_NAME>
                             </variables>
                             <stages>
                                 <none>feature/*,bugfix/*</none>
-                                <develop>develop</develop>
-                                <release>release/*</release>
-                                <master>master</master>
+                                <dev>develop</dev>
+                                <int>release/*</int>
+                                <prod>master</prod>
                             </stages>
                         </configuration>
                         <executions>
